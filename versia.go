@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
@@ -43,7 +44,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(id, event, whodunnit, object, object_changes)
+		fmt.Printf("Change id: %d Event type %s Authored by %s\n", id, event, whodunnit)
+		fmt.Printf("Object value: %s \n", object)
+		fmt.Printf("Changes made: %s \n\n", object_changes)
 	}
 	err = rows.Err()
 	if err != nil {
