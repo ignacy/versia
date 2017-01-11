@@ -44,9 +44,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Change id: %d Event type %s Authored by %s\n", id, event, whodunnit)
-		fmt.Printf("Object value: %s \n", object)
-		fmt.Printf("Changes made: %s \n\n", object_changes)
+		fmt.Printf("Version id: %d Event type %s Authored by %s\n", id, event, whodunnit)
+		fmt.Printf("Object before changes: \n %s \n", object)
+		fmt.Printf("Changes made: \n %s \n\n", object_changes)
 	}
 	err = rows.Err()
 	if err != nil {
