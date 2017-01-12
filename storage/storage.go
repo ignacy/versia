@@ -6,11 +6,11 @@ import (
 )
 
 type Version struct {
-	id             string
-	event          string
-	whodunnit      string
-	object         string
-	object_changes string
+	Id             string
+	Event          string
+	Whodunnit      string
+	Object         string
+	Object_changes string
 }
 
 func FindVersions(id int) []Version {
@@ -40,7 +40,7 @@ func FindVersions(id int) []Version {
 	for rows.Next() {
 		var v Version
 
-		err := rows.Scan(&v.id, &v.event, &v.whodunnit, &v.object, &v.object_changes)
+		err := rows.Scan(&v.Id, &v.Event, &v.Whodunnit, &v.Object, &v.Object_changes)
 		if err != nil {
 			log.Fatal(err)
 		}
