@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -22,7 +23,30 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "<h1>Hello there!</h1>")
+}
+
 func main() {
-	http.HandleFunc("/invoice/", invoiceHandler)
+	http.HandleFunc("/", BasicAuth(handleIndex, "admin", "123456", "Auth"))
+	http.HandleFunc("/invoice/", BasicAuth(invoiceHandler, "admin", "123456", "Auth"))
 	http.ListenAndServe(":8080", nil)
+}
+
+func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		user, pass, ok := r.BasicAuth()
+
+		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 ||
+			subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+			w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+			w.WriteHeader(401)
+			w.Write([]byte("Unauthorised.\n"))
+			return
+		}
+
+		handler(w, r)
+	}
 }
