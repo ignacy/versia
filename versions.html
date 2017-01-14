@@ -1,0 +1,59 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Version Browser</title>
+    <meta name="description" content="Whodunnit?">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.2.4/milligram.min.css" />
+
+    <link rel="stylesheet" href="static/styles.css">
+
+    <!--[if lt IE 9]>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+        <![endif]-->
+  </head>
+
+
+  <body>
+    <section class="container" id="versions">
+      <a href="/"> <small>< Back to main page </small></a>
+      <h1> Versions </h1>
+
+      <p>
+        List below shows changes made to invoice in chronogical
+        order, from the newest.  Some older changes might show as
+        missing and not always we have data for changeset or the
+        person who made the changes.
+      </p>
+
+      {{ range $versions := . }}
+
+      <h5>{{ .Event }} {{ .Id }} {{ .Whodunnit }}</h5>
+
+      <p class="before">
+        <pre>
+          <strong>Invoice before the change</strong>
+
+          <code>{{ .Object }}
+          </code>
+        </pre>
+      </p>
+
+      <p class="changes">
+        <pre>
+          <strong>Changes made</strong>
+
+          <code>{{ .Object_changes }} </code>
+        </pre>
+      </p>
+
+      {{ end }}
+    </section>
+
+  </body>
+</html>
