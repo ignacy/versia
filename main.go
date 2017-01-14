@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"gopkg.in/webhelp.v1/whlog"
+
 	"github.com/alecthomas/template"
 	"github.com/ignacy/versia/storage"
 	_ "github.com/lib/pq"
@@ -42,7 +44,7 @@ func main() {
 	mux.Handle("/", http.HandlerFunc(BasicAuth(handleIndex, "admin", "123456", "Auth")))
 	mux.Handle("/invoice/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", "123456", "Auth")))
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
-	http.ListenAndServe(":8080", mux)
+	whlog.ListenAndServe(":8080", whlog.LogResponses(whlog.Default, mux))
 }
 
 func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {

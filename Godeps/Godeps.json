@@ -24,6 +24,26 @@
 		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "7394c112eae4dba7e96bfcfe738e6373d61772b4"
+		},
+		{
+			"ImportPath": "gopkg.in/webhelp.v1",
+			"Rev": "d4ba59f587ae508ae4f0d11e9d262667b426dddc"
+		},
+		{
+			"ImportPath": "gopkg.in/webhelp.v1/whcompat",
+			"Rev": "d4ba59f587ae508ae4f0d11e9d262667b426dddc"
+		},
+		{
+			"ImportPath": "gopkg.in/webhelp.v1/whlog",
+			"Rev": "d4ba59f587ae508ae4f0d11e9d262667b426dddc"
+		},
+		{
+			"ImportPath": "gopkg.in/webhelp.v1/whmon",
+			"Rev": "d4ba59f587ae508ae4f0d11e9d262667b426dddc"
+		},
+		{
+			"ImportPath": "gopkg.in/webhelp.v1/whroute",
+			"Rev": "d4ba59f587ae508ae4f0d11e9d262667b426dddc"
 		}
 	]
 }
