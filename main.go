@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/subtle"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -45,11 +46,16 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(BasicAuth(handleIndex, "admin", basicAuth, "Auth")))
 	mux.Handle("/invoice/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", basicAuth, "Auth")))
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
-	whlog.ListenAndServe(":8080", whlog.LogResponses(whlog.Default, mux))
+	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
 }
 
 func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {
