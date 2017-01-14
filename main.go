@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/subtle"
 	"net/http"
+	"os"
 	"strconv"
 
 	"gopkg.in/webhelp.v1/whlog"
@@ -10,6 +11,10 @@ import (
 	"github.com/alecthomas/template"
 	"github.com/ignacy/versia/storage"
 	_ "github.com/lib/pq"
+)
+
+var (
+	basicAuth = os.Getenv("VERSIA_ADMIN_PASSWORD")
 )
 
 func invoiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,8 +46,8 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(BasicAuth(handleIndex, "admin", "123456", "Auth")))
-	mux.Handle("/invoice/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", "123456", "Auth")))
+	mux.Handle("/", http.HandlerFunc(BasicAuth(handleIndex, "admin", basicAuth, "Auth")))
+	mux.Handle("/invoice/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", basicAuth, "Auth")))
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
 	whlog.ListenAndServe(":8080", whlog.LogResponses(whlog.Default, mux))
 }
