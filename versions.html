@@ -22,7 +22,7 @@
   <body>
     <section class="container" id="versions">
       <a href="/"> <small>< Back to main page </small></a>
-      <h1> Versions </h1>
+                            <h1> Versions </h1>
 
       <p>
         List below shows changes made to invoice in chronogical
@@ -31,9 +31,15 @@
         person who made the changes.
       </p>
 
+      <ul>
+        {{ range $versions := . }}
+        <li> <a href="#{{ .Id }}">{{ .Event }} <small>{{ .Id }} </small>{{ .Whodunnit }}</a> </li>
+        {{ end }}
+      </ul>
+
       {{ range $versions := . }}
 
-      <h5>{{ .Event }} {{ .Id }} {{ .Whodunnit }}</h5>
+      <h5 id="{{ .Id }}">{{ .Event }} <small>{{ .Id }} </small>{{ .Whodunnit }}</h5>
 
       <p class="before">
         <pre>

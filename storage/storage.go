@@ -28,6 +28,7 @@ func FindVersions(id int) []Version {
            COALESCE(object, '') as object,
            COALESCE(object_changes, '') as object_changes
        FROM versions WHERE item_type = 'Invoice' AND item_id = $1
+       ORDER BY id DESC
       `, id)
 
 	if err != nil {
