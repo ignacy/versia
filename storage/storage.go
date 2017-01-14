@@ -3,6 +3,11 @@ package storage
 import (
 	"database/sql"
 	"log"
+	"os"
+)
+
+var (
+	pgString = os.Getenv("VERSIA_PG_STRING")
 )
 
 type Version struct {
@@ -18,7 +23,7 @@ type Invoice struct {
 }
 
 func ListInvoices() []Invoice {
-	db, err := sql.Open("postgres", "dbname=advanon_development sslmode=disable")
+	db, err := sql.Open("postgres", pgString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +61,7 @@ func ListInvoices() []Invoice {
 }
 
 func FindVersions(id int) []Version {
-	db, err := sql.Open("postgres", "dbname=advanon_development sslmode=disable")
+	db, err := sql.Open("postgres", pgString)
 	if err != nil {
 		log.Fatal(err)
 	}
