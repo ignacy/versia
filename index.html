@@ -21,7 +21,15 @@
 
   <body>
     <section class="container" id="list">
-      <h1>Hello</h1>
+      <h3>Select invoice id to see its changesets</h3>
+
+      <ul>
+        {{ range $invoices := . }}
+        <li><a href="/invoice/{{ .Id }}"><small>{{ .Id }} </small></a> </li>
+        {{ end }}
+      </ul>
+
+
     </section>
   </body>
 </html>

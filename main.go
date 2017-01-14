@@ -26,11 +26,12 @@ func invoiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
+	invoices := storage.ListInvoices()
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
 		panic(err)
 	}
-	err = t.Execute(w, nil)
+	err = t.Execute(w, invoices)
 	if err != nil {
 		panic(err)
 	}

@@ -13,6 +13,48 @@ type Version struct {
 	Object_changes string
 }
 
+type Invoice struct {
+	Id int
+}
+
+func ListInvoices() []Invoice {
+	db, err := sql.Open("postgres", "dbname=advanon_development sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query(`
+       SELECT
+           id
+       FROM invoices
+       ORDER BY id DESC
+      `)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	invoices := []Invoice{}
+
+	for rows.Next() {
+		var i Invoice
+
+		err := rows.Scan(&i.Id)
+		if err != nil {
+			log.Fatal(err)
+		}
+		invoices = append(invoices, i)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return invoices
+}
+
 func FindVersions(id int) []Version {
 	db, err := sql.Open("postgres", "dbname=advanon_development sslmode=disable")
 	if err != nil {
