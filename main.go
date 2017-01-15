@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"gopkg.in/webhelp.v1/whlog"
 
@@ -52,7 +53,7 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(BasicAuth(handleIndex, "admin", basicAuth, "Auth")))
+	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, "admin", basicAuth, "Auth"), "list")))
 	mux.Handle("/invoice/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", basicAuth, "Auth")))
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
 	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
@@ -70,6 +71,23 @@ func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.
 			w.WriteHeader(401)
 			w.Write([]byte("Unauthorised.\n"))
 			return
+		}
+
+		handler(w, r)
+	}
+}
+
+func Etags(handler http.HandlerFunc, key string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		e := `"` + key + `"`
+		w.Header().Set("Etag", e)
+		w.Header().Set("Cache-Control", "max-age=7200") // 2 hours
+
+		if match := r.Header.Get("If-None-Match"); match != "" {
+			if strings.Contains(match, e) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
 		}
 
 		handler(w, r)
