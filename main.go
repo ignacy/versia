@@ -18,11 +18,16 @@ import (
 var (
 	basicAuth       = os.Getenv("VERSIA_ADMIN_PASSWORD")
 	modelName       = os.Getenv("VERSIA_MODEL_NAME")
+	pgString        = os.Getenv("VERSIA_PG_STRING")
 	username        = "admin"
 	basicAuthPrompt = "Authorization:"
 )
 
-func modelHandler(w http.ResponseWriter, r *http.Request) {
+type Env struct {
+	db storage.Datastore
+}
+
+func (env *Env) modelHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/"+modelName+"/"):]
 	i, err := strconv.Atoi(id)
 	if err != nil {
@@ -31,8 +36,10 @@ func modelHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Showing version details for id = %d", i)
 
-	versions := storage.FindVersions(i)
-
+	versions, err := env.db.FindVersions(i)
+	if err != nil {
+		panic(err)
+	}
 	t, err := template.ParseFiles("versions.html")
 	if err != nil {
 		panic(err)
@@ -43,8 +50,11 @@ func modelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	models := storage.ListModels()
+func (env *Env) handleIndex(w http.ResponseWriter, r *http.Request) {
+	models, err := env.db.ListModels()
+	if err != nil {
+		panic(err)
+	}
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
 		panic(err)
@@ -92,9 +102,16 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
+	db, err := storage.NewDB(pgString)
+	if err != nil {
+		log.Panic(err)
+	}
+	env := &Env{db}
+
 	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, basicAuth), "list")))
-	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(modelHandler, basicAuth)))
-	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
+	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(env.handleIndex, basicAuth), "list")))
+	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(env.modelHandler, basicAuth)))
+	mux.Handle("/static/", http.StripPrefix("/static",
+		http.FileServer(http.Dir("./static-assets"))))
 	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
 }

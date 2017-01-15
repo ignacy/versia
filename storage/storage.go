@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"strings"
 )
@@ -10,6 +9,15 @@ import (
 var (
 	modelName = os.Getenv("VERSIA_MODEL_NAME")
 )
+
+type Datastore interface {
+	ListModels() ([]Model, error)
+	FindVersions(id int) ([]Version, error)
+}
+
+type DB struct {
+	*sql.DB
+}
 
 type Version struct {
 	Id             string
@@ -23,24 +31,22 @@ type Model struct {
 	Id int
 }
 
-var (
-	pgString = os.Getenv("VERSIA_PG_STRING")
-)
-
-func ListModels() []Model {
-	db, err := sql.Open("postgres", pgString)
+func NewDB(dataSourceName string) (*DB, error) {
+	db, err := sql.Open("postgres", dataSourceName)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
 	if err = db.Ping(); err != nil {
-		log.Panic(err)
+		return nil, err
 	}
+	return &DB{db}, nil
+}
 
+func (db *DB) ListModels() ([]Model, error) {
 	rows, err := db.Query("SELECT id FROM " + modelName + "s ORDER BY id DESC")
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -51,28 +57,19 @@ func ListModels() []Model {
 
 		err := rows.Scan(&i.Id)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		models = append(models, i)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return models
+	return models, nil
 }
 
-func FindVersions(id int) []Version {
-	db, err := sql.Open("postgres", pgString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err = db.Ping(); err != nil {
-		log.Panic(err)
-	}
-
+func (db *DB) FindVersions(id int) ([]Version, error) {
 	rows, err := db.Query(`
        SELECT
            id,
@@ -85,7 +82,7 @@ func FindVersions(id int) []Version {
       `, strings.Title(modelName), id)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -96,14 +93,14 @@ func FindVersions(id int) []Version {
 
 		err := rows.Scan(&v.Id, &v.Event, &v.Whodunnit, &v.Object, &v.Object_changes)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		versions = append(versions, v)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return versions
+	return versions, nil
 }
