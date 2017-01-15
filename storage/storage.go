@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	pgString  = os.Getenv("VERSIA_PG_STRING")
 	modelName = os.Getenv("VERSIA_MODEL_NAME")
 )
 
@@ -24,13 +23,20 @@ type Model struct {
 	Id int
 }
 
-func ListModels() []Model {
+var db *sql.DB
+
+func InitDB(pgString string) {
 	db, err := sql.Open("postgres", pgString)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
+	if err = db.Ping(); err != nil {
+		log.Panic(err)
+	}
+}
+
+func ListModels() []Model {
 	rows, err := db.Query("SELECT id FROM " + modelName + "s ORDER BY id DESC")
 
 	if err != nil {
@@ -58,12 +64,6 @@ func ListModels() []Model {
 }
 
 func FindVersions(id int) []Version {
-	db, err := sql.Open("postgres", pgString)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
 	rows, err := db.Query(`
        SELECT
            id,

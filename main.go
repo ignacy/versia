@@ -16,8 +16,11 @@ import (
 )
 
 var (
-	basicAuth = os.Getenv("VERSIA_ADMIN_PASSWORD")
-	modelName = os.Getenv("VERSIA_MODEL_NAME")
+	basicAuth       = os.Getenv("VERSIA_ADMIN_PASSWORD")
+	modelName       = os.Getenv("VERSIA_MODEL_NAME")
+	pgString        = os.Getenv("VERSIA_PG_STRING")
+	username        = "admin"
+	basicAuthPrompt = "Authorization:"
 )
 
 func modelHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,33 +50,16 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	port := os.Getenv("PORT")
-
-	if port == "" {
-		log.Fatal("$PORT must be set")
-	}
-	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, "admin", basicAuth, "Auth"), "list")))
-	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(modelHandler, "admin", basicAuth, "Auth")))
-	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
-	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
-}
-
-func BasicAuth(handler http.HandlerFunc, username, password, realm string) http.HandlerFunc {
-
+func BasicAuth(handler http.HandlerFunc, password string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		user, pass, ok := r.BasicAuth()
-
 		if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 ||
 			subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
-			w.Header().Set("WWW-Authenticate", `Basic realm="`+realm+`"`)
+			w.Header().Set("WWW-Authenticate", `Basic realm="`+basicAuthPrompt+`"`)
 			w.WriteHeader(401)
 			w.Write([]byte("Unauthorised.\n"))
 			return
 		}
-
 		handler(w, r)
 	}
 }
@@ -90,7 +76,22 @@ func Etags(handler http.HandlerFunc, key string) http.HandlerFunc {
 				return
 			}
 		}
-
 		handler(w, r)
 	}
+}
+
+func main() {
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
+	storage.InitDB(pgString)
+
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, basicAuth), "list")))
+	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(modelHandler, basicAuth)))
+	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
+	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
 }
