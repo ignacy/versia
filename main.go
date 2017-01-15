@@ -20,7 +20,7 @@ var (
 	modelName = os.Getenv("VERSIA_MODEL_NAME")
 )
 
-func invoiceHandler(w http.ResponseWriter, r *http.Request) {
+func modelHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/"+modelName+"/"):]
 	i, _ := strconv.Atoi(id)
 	versions := storage.FindVersions(i)
@@ -55,7 +55,7 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, "admin", basicAuth, "Auth"), "list")))
-	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(invoiceHandler, "admin", basicAuth, "Auth")))
+	mux.Handle("/"+modelName+"/", http.HandlerFunc(BasicAuth(modelHandler, "admin", basicAuth, "Auth")))
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("./static-assets"))))
 	whlog.ListenAndServe(":"+port, whlog.LogResponses(whlog.Default, mux))
 }
