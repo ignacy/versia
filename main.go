@@ -25,7 +25,13 @@ var (
 
 func modelHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/"+modelName+"/"):]
-	i, _ := strconv.Atoi(id)
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("Showing version details for id = %d", i)
+
 	versions := storage.FindVersions(i)
 
 	t, err := template.ParseFiles("versions.html")

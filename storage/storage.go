@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	"strings"
 )
 
 var (
@@ -71,9 +70,9 @@ func FindVersions(id int) []Version {
            COALESCE(whodunnit, '') as whodunnit,
            COALESCE(object, '') as object,
            COALESCE(object_changes, '') as object_changes
-       FROM versions WHERE item_type = $1 AND item_id = $2
+       FROM versions WHERE item_type = 'Invoice' AND item_id = $1
        ORDER BY id DESC
-      `, strings.Title(modelName), id)
+      `, id)
 
 	if err != nil {
 		log.Fatal(err)
