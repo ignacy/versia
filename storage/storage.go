@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -22,9 +23,11 @@ type Model struct {
 	Id int
 }
 
-var db *sql.DB
+var (
+	pgString = os.Getenv("VERSIA_PG_STRING")
+)
 
-func InitDB(pgString string) {
+func ListModels() []Model {
 	db, err := sql.Open("postgres", pgString)
 	if err != nil {
 		log.Fatal(err)
@@ -33,9 +36,7 @@ func InitDB(pgString string) {
 	if err = db.Ping(); err != nil {
 		log.Panic(err)
 	}
-}
 
-func ListModels() []Model {
 	rows, err := db.Query("SELECT id FROM " + modelName + "s ORDER BY id DESC")
 
 	if err != nil {
@@ -63,6 +64,15 @@ func ListModels() []Model {
 }
 
 func FindVersions(id int) []Version {
+	db, err := sql.Open("postgres", pgString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = db.Ping(); err != nil {
+		log.Panic(err)
+	}
+
 	rows, err := db.Query(`
        SELECT
            id,
@@ -70,9 +80,9 @@ func FindVersions(id int) []Version {
            COALESCE(whodunnit, '') as whodunnit,
            COALESCE(object, '') as object,
            COALESCE(object_changes, '') as object_changes
-       FROM versions WHERE item_type = 'Invoice' AND item_id = $1
+       FROM versions WHERE item_type = $1 AND item_id = $2
        ORDER BY id DESC
-      `, id)
+      `, strings.Title(modelName), id)
 
 	if err != nil {
 		log.Fatal(err)

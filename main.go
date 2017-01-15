@@ -18,7 +18,6 @@ import (
 var (
 	basicAuth       = os.Getenv("VERSIA_ADMIN_PASSWORD")
 	modelName       = os.Getenv("VERSIA_MODEL_NAME")
-	pgString        = os.Getenv("VERSIA_PG_STRING")
 	username        = "admin"
 	basicAuthPrompt = "Authorization:"
 )
@@ -92,8 +91,6 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-
-	storage.InitDB(pgString)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(Etags(BasicAuth(handleIndex, basicAuth), "list")))
