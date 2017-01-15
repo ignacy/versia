@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
-	pgString = os.Getenv("VERSIA_PG_STRING")
+	pgString  = os.Getenv("VERSIA_PG_STRING")
+	modelName = os.Getenv("VERSIA_MODEL_NAME")
 )
 
 type Version struct {
@@ -18,46 +20,41 @@ type Version struct {
 	Object_changes string
 }
 
-type Invoice struct {
+type Model struct {
 	Id int
 }
 
-func ListInvoices() []Invoice {
+func ListModels() []Model {
 	db, err := sql.Open("postgres", pgString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	rows, err := db.Query(`
-       SELECT
-           id
-       FROM invoices
-       ORDER BY id DESC
-      `)
+	rows, err := db.Query("SELECT id FROM " + modelName + "s ORDER BY id DESC")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 
-	invoices := []Invoice{}
+	models := []Model{}
 
 	for rows.Next() {
-		var i Invoice
+		var i Model
 
 		err := rows.Scan(&i.Id)
 		if err != nil {
 			log.Fatal(err)
 		}
-		invoices = append(invoices, i)
+		models = append(models, i)
 	}
 	err = rows.Err()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return invoices
+	return models
 }
 
 func FindVersions(id int) []Version {
@@ -74,9 +71,9 @@ func FindVersions(id int) []Version {
            COALESCE(whodunnit, '') as whodunnit,
            COALESCE(object, '') as object,
            COALESCE(object_changes, '') as object_changes
-       FROM versions WHERE item_type = 'Invoice' AND item_id = $1
+       FROM versions WHERE item_type = $1 AND item_id = $2
        ORDER BY id DESC
-      `, id)
+      `, strings.Title(modelName), id)
 
 	if err != nil {
 		log.Fatal(err)
